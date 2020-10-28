@@ -1,31 +1,39 @@
-var corsApiUrl = "https://cors-anywhere.herokuapp.com/";
-// TODO: REPLACE YOUR TOKEN
-var apiToken = "?token=YOUR_TOKEN_HERE";
+const resultUl = document.querySelector('ul');
 
-// CORS stands for "cross origin resource sharing" -- you'll be making http requests in order
-// DON'T CHANGE THIS: fetches the data from the API endpoint
-const doCORSRequest = (options) => {
-  var x = new XMLHttpRequest();
-  x.open("GET", corsApiUrl + options.url);
-  x.send(options.data);
-  return x;
+const clearList = () => {
+  while (resultUl.firstChild) {
+    resultUl.removeChild(resultUl.firstChild);
+  }
 };
 
-// Example promise that executes the GET request above and waits for it to finish before resolving
-const corsPromise = () =>
-  new Promise((resolve, reject) => {
-    const request = doCORSRequest({
-      url: "https://trefle.io/api/v1/plants" + apiToken,
-    });
-    resolve(request);
+const addListEl = name => {
+  const li = document.createElement('li');
+  li.textContent = name;
+  document.querySelector('ul').appendChild(li);
+};
+
+const handleResults = (results, letter) => {
+  console.log(results);
+  const filtered = results.filter(result => result.common_name[0].toUpperCase() === letter.toUpperCase());
+  clearList();
+  filtered.forEach(plant => {
+    addListEl(plant.common_name);
   });
+};
 
-// THIS IS SOME SAMPLE CODE FOR HOW TO USE PROMISES -- feel free to adapt this into a function!
-corsPromise().then(
-  (request) =>
-    (request.onload = request.onerror = function () {
-      // TODO: ADD FUNCTION, ETC. FOR WHATEVER YOU WANT TO DO ONCE THE DATA IS RECEIVED
-    })
-);
+const notifyError = () => {
+  alert('something went wrong');
+};
 
-//// TODO: ADD WHATEVER FUN CONTENT YOU WANT ////
+const search = letter => {
+  fetch(`https://cors-anywhere.herokuapp.com/https://trefle.io/api/v1/plants?token=yp9W2Plouedcmp2Z0KslpOECeEyxZJzZG1nu7t3jTOI`)
+    .then(res => res.json())
+    .then(json => handleResults(json.data, letter))
+    .catch(notifyError);
+};
+
+document.querySelector('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const letter = document.querySelector('.form-control').value;
+  search(letter);
+});
